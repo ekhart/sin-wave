@@ -54,18 +54,18 @@
 
 (def sine-wave (.map my-time sine-coord))
 
-(-> sine-wave
-    (.take 5)
-    (.subscribe #(log (str %))))
+;; (-> sine-wave
+;;     (.take 5)
+;;     (.subscribe #(log (str %))))
 
 (defn fill-rect [x y colour]
   (set! (.-fillStyle ctx) colour)
   (.fillRect ctx x y 2 2))
 
-(-> sine-wave
-    (.take 600)
-    (.subscribe (fn [{:keys [x y]}]
-                  (fill-rect x y "orange"))))
+;; (-> sine-wave
+;;     (.take 600)
+;;     (.subscribe (fn [{:keys [x y]}]
+;;                   (fill-rect x y "orange"))))
 
 ;; More colors
 (def colour (.map sine-wave
@@ -74,7 +74,29 @@
                       "red"
                       "blue"))))
 
-(-> (.zip sine-wave colour #(vector % %2))
+;; (-> (.zip sine-wave colour #(vector % %2))
+;;     (.take 600)
+;;     (.subscribe (fn [[{:keys [x y]} colour]]
+;;                   (fill-rect x y colour))))
+
+
+;; Making it reactive
+(def red (.map my-time (fn [_] "red")))
+(def blue (.map my-time (fn [_] "blue"))) ; const streams
+
+(def rx-concat js/Rx.Observable.concat)
+(def defer js/Rx.Observable.defer)
+(def from-event js/Rx.Observable.fromEvent)
+
+(def mouse-click (from-event canvas "click"))
+
+(def cycle-colour
+  (rx-concat (.takeUntil red mouse-click)
+          (defer #(concat (.takeUntil blue mouse-click)
+                          cycle-colour))))
+
+(-> (.zip sine-wave cycle-colour #(vector % %2))
     (.take 600)
     (.subscribe (fn [[{:keys [x y]} colour]]
                   (fill-rect x y colour))))
+

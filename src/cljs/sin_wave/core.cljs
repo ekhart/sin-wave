@@ -18,12 +18,51 @@
    app-state
    {:target (js/document.getElementById "app")}))
 
-(.log js/console "hello clojurescript")
+(defn log [x]
+  (.log js/console x))
+
+(log "hello clojurescript")
 
 (def canvas (.getElementById js/document "myCanvas"))
-(.log js/console canvas)
+(log canvas)
 (def ctx (.getContext canvas "2d"))
-(.log js/console ctx)
+(log ctx)
 
 ;; Clear canvas before doing anything else
 (.clearRect ctx 0 0 (.-width canvas) (.-height canvas))
+
+(def interval js/Rx.Observable.interval)
+(def my-time (interval 10))
+
+(-> my-time
+    (.take 5)
+    (.subscribe #(log %)))
+
+(defn deg-to-rad [n]
+  (* (/ Math/PI 180) n))
+
+(defn sine-coord [x]
+  (let [sin (Math/sin (deg-to-rad x))
+        y (- 100 (* sin 90))]
+    {:x x
+     :y y
+     :sin sin}))
+
+(log (str (sine-coord 50)))
+
+(def sine-wave (.map my-time sine-coord))
+
+(-> sine-wave
+    (.take 5)
+    (.subscribe #(log (str %))))
+
+(defn fill-rect [x y colour]
+  (set! (.-fillStyle ctx) colour)
+  (.fillRect ctx x y 2 2))
+
+(-> sine-wave
+    (.take 600)
+    (.subscribe (fn [{:keys [x y]}]
+                  (fill-rect x y "orange"))))
+
+

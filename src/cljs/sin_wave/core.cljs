@@ -17,3 +17,13 @@
    root-component
    app-state
    {:target (js/document.getElementById "app")}))
+
+(.log js/console "hello clojurescript")
+
+(def canvas (.getElementById js/document "myCanvas"))
+(.log js/console canvas)
+(def ctx (.getContext canvas "2d"))
+(.log js/console ctx)
+
+;; Clear canvas before doing anything else
+(.clearRect ctx 0 0 (.-width canvas) (.-height canvas))

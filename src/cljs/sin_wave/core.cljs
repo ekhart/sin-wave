@@ -31,6 +31,8 @@
 ;; Clear canvas before doing anything else
 (.clearRect ctx 0 0 (.-width canvas) (.-height canvas))
 
+
+;; Creating time
 (def interval js/Rx.Observable.interval)
 (def my-time (interval 10))
 
@@ -65,4 +67,14 @@
     (.subscribe (fn [{:keys [x y]}]
                   (fill-rect x y "orange"))))
 
+;; More colors
+(def colour (.map sine-wave
+                  (fn [{:keys [sin]}]
+                    (if (< sin 0)
+                      "red"
+                      "blue"))))
 
+(-> (.zip sine-wave colour #(vector % %2))
+    (.take 600)
+    (.subscribe (fn [[{:keys [x y]} colour]]
+                  (fill-rect x y colour))))
